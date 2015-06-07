@@ -1,0 +1,27 @@
+{
+  "name": "Anime TV",
+  "manifest_version": 2,
+  "version": "0.1",
+  "description": "Takip ettiğiniz anime geldiğinde ilk öğrenen siz olun",
+  "browser_action": {
+      "default_title": "Anime TV",
+      "default_icon": "img/icon.png",
+      "default_popup": "popup.html"
+  },
+  "icons":{
+    "128":"img/icon.png"
+  },
+  "content_scripts": [{
+    "matches": ["http://*/*"],
+    "js": ["js/popup.js"],
+    "run_at": "document_start"
+  }],
+  "options_page": "options.html",
+  "background": { "scripts": ["js/background.js"] },
+  "permissions": [
+    "https://www.kimonolabs.com/*",
+    "notifications",
+    "storage"
+  ],
+  "content_security_policy": "script-src 'self' https://www.kimonolabs.com; object-src 'self'"
+}
