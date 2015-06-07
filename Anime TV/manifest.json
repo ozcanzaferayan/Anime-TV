@@ -17,7 +17,12 @@
     "run_at": "document_start"
   }],
   "options_page": "options.html",
-  "background": { "scripts": ["js/background.js"] },
+  "background": { 
+    "scripts": 
+    [
+      "js/jquery-2.1.0.min.js",
+      "js/background.js"
+    ] },
   "permissions": [
     "https://www.kimonolabs.com/*",
     "notifications",
