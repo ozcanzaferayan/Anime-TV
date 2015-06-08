@@ -1,21 +1,27 @@
-var bgTimeInterval = 60000; // 1dk'da bir servis çalışacak
+var intervalNewAnimeList =    60000; // 1dk'da bir servis çalışacak
+var intervalAllAnimeList =  3600000; // 1saatte bir servis çalışacak
 var notTimeout = 10000; // 10sn boyunca notification açık kalacak 
+var apiFrequencyMilis = 15 * 60 * 1000; // 15dk API crawl aralığı
 var newAnimes;
 var allList;
 
-// Başlangıçta içeriklerin getirilmesi için
+//Başlangıçta içeriklerin getirilmesi için
 $(document).ready(function(){
   storeNewAnimes();
   getAllList();
 });
 
 setInterval(function(){
-  var currentTimeText = /(..)(:..)(:..)/.exec(new Date())[0];
-  console.log("Servis çalışıyor: " + currentTimeText);
   storeNewAnimes();
-}, bgTimeInterval);
+}, intervalNewAnimeList);
+
+setInterval(function(){
+  getAllList();
+}, intervalAllAnimeList);
 
 function storeNewAnimes(){
+  var currentTimeText = /(..)(:..)(:..)/.exec(new Date())[0];
+  console.info("Yeni anime liste servisi çalışıyor: " + currentTimeText);
   // Storage'da kaydedilen önceki animeleri getir
   // Eğer veriler storage'da yoksa yenilerini API'den çek
   var data = localStorage.newAnimesObject;
@@ -26,55 +32,57 @@ function storeNewAnimes(){
   else {
     data = JSON.parse(data);
     // Eğer veriler storage'da varsa güncellemek için kontrol et
-    console.log("newAnimesObject storage'da var:");
-    console.log(data);
+    console.log("newAnimesObject storage'da var");
     if (data.lastrunstatus == "in progress") {
         // api şu anki yenilenme zamanı
-        var thisVersionRunMilis = new Date(newAnimes.thisversionrun).getTime();
-        var apiFrequencyMilis = 15 * 60 * 1000; // 15dk
+        var thisVersionRunMilis = new Date(data.thisversionrun).getTime();
         // 15 dk sonrasında api tekrar yenilenecek
         data.nextrun = new Date(thisVersionRunMilis + apiFrequencyMilis);
         // api isteği tamamlandı
-        data.lastrunstatus == "success";
-        newAnimes = data;
-        newAnimes = transform(newAnimes);
+        data.lastrunstatus = "success";
+        data = transform(data);
         // Değiştirilmiş verileri eskisinin üzerine yaz
-        localStorage.newAnimesObject = JSON.stringify(newAnimes);
+        localStorage.newAnimesObject = JSON.stringify(data);
     }
     else { // "success"
     }
-    var nextRunTime = new Date(data.nextrun).getTime();
-    var currentTime = new Date().getTime();
     // Eğer API'nin sonraki çalışma zamanı gelmişse yeni animeleri getir
-    if (currentTime >= nextRunTime){
+    if (checkIfApiTimeCame(data.nextrun)){
       getNewAnimes(data);
     }
     else {
-      var nextRunTimeText = /(..)(:..)(:..)/.exec(new Date(nextRunTime))[0];
+      var nextRunTimeText = /(..)(:..)(:..)/.exec(new Date(data.nextrun))[0];
       console.log('Henüz API güncellenmedi. nextrun: ' + nextRunTimeText);
     }
   }
 }
 
-
-
+// API'nin güncellenme zamanı geldi mi
+function checkIfApiTimeCame(nextrunDate){
+  // iki tarihi de milisaniye cinsinden kıyaslar
+  var nextRunTime = new Date(nextrunDate).getTime();
+  var currentTime = new Date().getTime();
+  return currentTime >= nextRunTime ? true: false;
+}
 
 
 // API'den yeni animeleri çekip storage'a set etmek içindir
-function getNewAnimes(oldAnimes){
+function getNewAnimes(localAnimes){
+  console.log("newAnimesObject Ajax ile çekiliyor...");
   $.ajax({
     url:"https://www.kimonolabs.com/api/cq7nr4ag?apikey=bq34GvSZDidJFU4L4Kp7chJoJRvT0LSR",
     crossDomain: true,
     dataType: "jsonp",
     success: function (response) {
       newAnimes = response;
-      console.log('newAnimes:');
-      console.log(newAnimes);
-      console.log('oldAnimes:');
-      console.log(oldAnimes);
       newAnimes = transform(newAnimes);
       localStorage.newAnimesObject = JSON.stringify(newAnimes);
-      checkForNewAnimes(oldAnimes, newAnimes);
+      console.log("newAnimesObject verisi storage'a yazıldı");
+      // local'de anime listesi var mı
+      if (localAnimes !== undefined){
+        // localdeki animelerle yeni gelenleri kıyasla
+        checkForNewAnimes(localAnimes, newAnimes);
+      }
     },
     error: function (xhr, status) {
       
@@ -83,11 +91,11 @@ function getNewAnimes(oldAnimes){
 }
 
 // Yeni gelen anime listesinde eski listeden farklı anime var mı
-function checkForNewAnimes(oldAnimes, newAnimes){
+function checkForNewAnimes(localAnimes, newAnimes){
   console.info("Farklı anime gelmiş mi kontrol ediliyor...");
   var addedAnimes = [];
-  if ($.isEmptyObject(oldAnimes)) return;
-  var oldAnimeList = oldAnimes.results.anime;
+  if ($.isEmptyObject(localAnimes)) return;
+  var oldAnimeList = localAnimes.results.anime;
   var newAnimeList = newAnimes.results.anime;
   $(newAnimeList).each(function(i,v){
     var isFind = false;
@@ -117,7 +125,7 @@ function notificateAnimes(addedAnimes){
     var animeIcon = v.image.src;        // Anime icon linki
     var notTitle = animeName;            // Notification adı
     var notIcon = animeIcon;            // Notification icon
-    var notBody = 'Yeni anime geldi!';  // Notification text
+    var notBody = 'İzlemek için tıklayınız.';  // Notification text
     console.info('Bildirim atılıyor...')
     var notification = new Notification(
       notTitle, {
@@ -136,7 +144,7 @@ function notificateAnimes(addedAnimes){
   });
 }
 
-// Gelen API verisini uygun hale dönüştürmek için
+// Gelen API yeni anime listesindeki uygun hale dönüştürmek için
 function transform(data) {
   var animeList = data.results.anime;
   for (var i = 0; i < animeList.length; i++){
@@ -176,23 +184,41 @@ function transform(data) {
 
 // Tüm anime listesinin getirilmesi için
 function getAllList(){
-  if(localStorage.listObject === undefined) {
-    console.log("listObject verisi yok");
-    $.ajax({
-      url:"https://www.kimonolabs.com/api/8j5at8tc?apikey=bq34GvSZDidJFU4L4Kp7chJoJRvT0LSR",
-      crossDomain: true,
-      dataType: "jsonp",
-      success: function (response) {
-        allList = response.results.list;
-        console.log(allList);
-        localStorage.listObject = JSON.stringify(allList);
-      },
-      error: function (xhr, status) {
-        
-      }
-    });
-  }
-  else {
-    console.log('listObject verisi cachede');
-  }
+  console.info("Tüm liste ajax ile çekiliyor");
+  $.ajax({
+    url:"https://www.kimonolabs.com/api/8j5at8tc?apikey=bq34GvSZDidJFU4L4Kp7chJoJRvT0LSR",
+    crossDomain: true,
+    dataType: "jsonp",
+    success: function (response) {
+      // ul içerisine direkt olarak eklenecek list item'lar
+      var animeULDom = "";
+      $(response.results.list).each(function (i,v){
+        animeULDom += 
+          '<li class="sLi">' +
+          ' <a class="sA" href="' + v.name.href + '" target="_blank">' +
+            v.name.text +
+          ' </a>' +
+          '</li>'
+      });
+      localStorage.listObject = animeULDom;
+      console.info("Tüm liste storage'a yazıldı");
+    },
+    error: function (xhr, status) {
+      
+    }
+  });
+}
+
+// Searchlist DOM'unun oluşturulması
+function prepareSearchList(listObject){  
+  $(listObject).each(function (i,v){
+    $('#searchList').append(
+      '<li class="sLi">' +
+      ' <a class="sA" href="' + v.name.href + '" target="_blank">' +
+        v.name.text +
+      ' </a>' +
+      '</li>'
+    );
+  });
+  return prepareSearchList;
 }

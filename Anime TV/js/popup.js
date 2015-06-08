@@ -5,8 +5,6 @@ var storage;
 // Yeni eklenen animeler
 var newAnimes;
 
-var isAllListPrepared = false;
-
 document.addEventListener('DOMContentLoaded', main);
 function main() {
   //addSpinner();
@@ -106,23 +104,5 @@ function getItems(){
 
   
 function getAllList(){
-  // Tüm animeler listesi zaten oluşturulmuşsa çık
-  if(isAllListPrepared) return;
-  // localStorage'dan anime listesini getir
-  allList = JSON.parse(localStorage.listObject);
-  // anime listesini DOM olarak aktar
-  prepareSearchList(allList);
-}
-
-function prepareSearchList(allList){  
-  $(allList).each(function (i,v){
-    $('#searchList').append(
-      '<li class="sLi">' +
-      ' <a class="sA" href="' + v.name.href + '" target="_blank">' +
-        v.name.text +
-      ' </a>' +
-      '</li>'
-    );
-  });
-  isAllListPrepared = true;
+  $('#searchList').append(localStorage.listObject);
 }
