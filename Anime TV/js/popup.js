@@ -5,10 +5,10 @@ var storage;
 
 document.addEventListener('DOMContentLoaded', main);
 function main() {
-  storage = chrome.storage.local;
   addSpinner();
   getItems();
-  getAllList();
+  //storage = chrome.storage.local;
+  //getAllList();
 }
 
 // txtSearch'e tıklandığında dropdown menü gözükmesi için
@@ -69,7 +69,6 @@ function removeSpinner(){
   $('.mod').remove();
 }
 
-
 function getItems(){
   $.ajax({
   url:"https://www.kimonolabs.com/api/cq7nr4ag?apikey=bq34GvSZDidJFU4L4Kp7chJoJRvT0LSR",
@@ -77,36 +76,28 @@ function getItems(){
   dataType: "jsonp",
   success: function (response) {
     removeSpinner();
+    response = transform(response);
     $(response.results.anime).each(function(i,v){
-      var titleText =  v.name.text;
-      var parts = titleText.split(/ ([0-9]*. Bölüm \w+)/);
-      if (parts.length == 1) {
-        parts = titleText.split(/ ([0-9]*. Bölüm)/);
-      }
-      var title, episode;
-      if (parts.length == 1) {
-        title = titleText;
-        episode = "";
-      }
-      else {
-        title = parts[0];
-        episode = parts[1];
-      }
-      var likes = v.likes.text;
-      var dislikes = v.dislikes.text;
-      var date = v.date.split("yaklaşık ")[1];
+      console.debug();
+      var animeName     = v.name.text;
+      var animeEp       = v.episode;
+      var animeDate     = v.date;  
+      var animeHref     = v.name.href;
+      var animeLikes    = v.likes.text;
+      var animeDislikes = v.dislikes.text;
+      var animeImage    = v.image.src;
       $('ul#newList').append(
         '<li class="newListAnim">' +
-        ' <a href="' + v.name.href + '" target="_blank">'+
-        '   <img src="' + v.image.src + '">' +
+        ' <a href="' + animeHref + '" target="_blank">'+
+        '   <img src="' + animeImage + '">' +
         '   <div class="details">' +
-        '     <div class="title">' + title + '</div>' +
-        '     <div class="ep">' + episode + '</div>' +
+        '     <div class="title">' + animeName + '</div>' +
+        '     <div class="ep">' + animeEp + '</div>' +
         '     <div class="likes">' + 
-        '       &#128077;' + likes + 
-        '       &#128078;' + dislikes +  
+        '       &#128077;' + animeLikes + 
+        '       &#128078;' + animeDislikes +  
         '     </div>' +  
-        '     <div class="date">' + date + '</div>' +
+        '     <div class="date">' + animeDate + '</div>' +
         '   </div>' +
         ' </a>' +
         '</li>'
@@ -118,6 +109,43 @@ function getItems(){
     //handle errors
   }
 });
+}
+
+function transform(data) {
+  var animeList = data.results.anime;
+  for (var i = 0; i < animeList.length; i++){
+    var anime = animeList[i];
+    var animeName;  // Anime adı
+    var animeEp;    // Anime bölüm bilgisi
+    var animeDate;  // Ne zaman eklendiği
+    var animeNameEp = anime.name.text; // Bölüm bilgisi ile anime adı
+    var animeHref = anime.name.href;  // Anime linki
+    
+    // Bölüm bilgisinin alınması
+    var animeHrefParts = animeHref.split(/-([0-9]*-bolum)/);
+    // Bölüm bilgisi varsa al yoksa empty string olarak ata
+    if (animeHrefParts.length > 1) {
+      // Bölüm numarasının alınması
+      var epNumber = animeHrefParts[1].split('-')[0];
+      animeEp = epNumber + ". " + "Bölüm";
+    }
+    else {
+      animeEp = "";
+    }
+    // Anime adından bölüm bilgisinin çıkarılması
+    animeName = animeNameEp.split(/ ([0-9]*. B*)/)[0];
+    // Anime adı büyükse kısalt
+    if(animeName.length > 34){
+      animeName = animeName.substring(0,31) + "...";
+    }
+    animeDate = anime.date.split("yaklaşık ")[1];
+    
+    // Yeni özelliklerle anime nesnesinin set edilmesi
+    data.results.anime[i].name.text = animeName;
+    data.results.anime[i].episode   = animeEp;
+    data.results.anime[i].date      = animeDate;
+  }
+  return data;
 }
 
   
