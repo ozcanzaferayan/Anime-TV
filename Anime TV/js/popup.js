@@ -10,14 +10,12 @@ var isAllListPrepared = false;
 document.addEventListener('DOMContentLoaded', main);
 function main() {
   //addSpinner();
-  storage = chrome.storage.local;
   getItems();
+  getAllList();
 }
 
 // txtSearch'e tıklandığında dropdown menü gözükmesi için
 $('#txtSearch').on('focus', function(e){
-    if(!isAllListPrepared)
-      getAllList();
     // Alt kenarlıkların düzeltilmesi için
     $('#txtSearch').css('border-radius', '3px 3px 0px 0px');
     $('#searchList').show();
@@ -76,43 +74,44 @@ function removeSpinner(){
 
 
 function getItems(){
-  storage.get(newAnimes, function (data) {
-    $(data.newAnimesObject.results.anime).each(function(i,v){
-      console.debug();
-      var animeName     = v.name.text;
-      var animeEp       = v.episode;
-      var animeDate     = v.date;  
-      var animeHref     = v.name.href;
-      var animeLikes    = v.likes.text;
-      var animeDislikes = v.dislikes.text;
-      var animeImage    = v.image.src;
-      $('ul#newList').append(
-        '<li class="newListAnim">' +
-        ' <a href="' + animeHref + '" target="_blank">'+
-        '   <img src="' + animeImage + '">' +
-        '   <div class="details">' +
-        '     <div class="title">' + animeName + '</div>' +
-        '     <div class="ep">' + animeEp + '</div>' +
-        '     <div class="likes">' + 
-        '       &#128077;' + animeLikes + 
-        '       &#128078;' + animeDislikes +  
-        '     </div>' +  
-        '     <div class="date">' + animeDate + '</div>' +
-        '   </div>' +
-        ' </a>' +
-        '</li>'
-        
-      );
-    });
+  var newAnimes = JSON.parse(localStorage.newAnimesObject);
+  $(newAnimes.results.anime).each(function(i,v){
+    console.debug();
+    var animeName     = v.name.text;
+    var animeEp       = v.episode;
+    var animeDate     = v.date;  
+    var animeHref     = v.name.href;
+    var animeLikes    = v.likes.text;
+    var animeDislikes = v.dislikes.text;
+    var animeImage    = v.image.src;
+    $('ul#newList').append(
+      '<li class="newListAnim">' +
+      ' <a href="' + animeHref + '" target="_blank">'+
+      '   <img src="' + animeImage + '">' +
+      '   <div class="details">' +
+      '     <div class="title">' + animeName + '</div>' +
+      '     <div class="ep">' + animeEp + '</div>' +
+      '     <div class="likes">' + 
+      '       &#128077;' + animeLikes + 
+      '       &#128078;' + animeDislikes +  
+      '     </div>' +  
+      '     <div class="date">' + animeDate + '</div>' +
+      '   </div>' +
+      ' </a>' +
+      '</li>'
+      
+    );
   });
 }
 
   
 function getAllList(){
-  storage.get(allList, function (data) {
-    allList = data.listObject;
-    prepareSearchList(allList);
-  });
+  // Tüm animeler listesi zaten oluşturulmuşsa çık
+  if(isAllListPrepared) return;
+  // localStorage'dan anime listesini getir
+  allList = JSON.parse(localStorage.listObject);
+  // anime listesini DOM olarak aktar
+  prepareSearchList(allList);
 }
 
 function prepareSearchList(allList){  
