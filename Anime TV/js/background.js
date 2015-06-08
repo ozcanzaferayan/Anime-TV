@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var bgTimeInterval = 15000; // 5dk'da bir
+var bgTimeInterval = 60000; // 1dk'da bir servis çalışacak
 var storage = chrome.storage.local;
 var newAnimes;
+var allList;
 
 // Başlangıçta içeriklerin getirilmesi için
 $(document).ready(function(){
   storeNewAnimes();
+  getAllList();
 });
 
 setInterval(function(){
@@ -19,8 +21,9 @@ setInterval(function(){
 
 function storeNewAnimes(){
   // Storage'da kaydedilen önceki animeleri getir
-  storage.get(newAnimes, function (data) {
+  storage.get('newAnimesObject', function (data) {
     // Eğer veriler storage'da yoksa yenilerini API'den çek
+    data = data.newAnimesObject;
     if($.isEmptyObject(data) || chrome.runtime.lastError) {
       console.log("newAnimes verisi storage'da yok.");
       getNewAnimes(data);
@@ -38,6 +41,7 @@ function storeNewAnimes(){
           // api isteği tamamlandı
           data.lastrunstatus == "success";
           newAnimes = data;
+          newAnimes = transform(newAnimes);
           storage.set(newAnimes);
       }
       else { // "success"
@@ -57,6 +61,8 @@ function storeNewAnimes(){
   });
 }
 
+
+
 // API'den yeni animeleri çekip storage'a set etmek içindir
 function getNewAnimes(oldAnimes){
   $.ajax({
@@ -69,7 +75,8 @@ function getNewAnimes(oldAnimes){
       console.log(newAnimes);
       console.log('oldAnimes:');
       console.log(oldAnimes);
-      storage.set(newAnimes);
+      newAnimes = transform(newAnimes);
+      storage.set({'newAnimesObject' : newAnimes});
       checkForNewAnimes(oldAnimes, newAnimes);
     },
     error: function (xhr, status) {
@@ -128,54 +135,64 @@ function notificateAnimes(addedAnimes){
   });
 }
 
-/*
-  Displays a notification with the current time. Requires "notifications"
-  permission in the manifest file (or calling
-  "Notification.requestPermission" beforehand).
-*/
-// function show() {
-//   var time = /(..)(:..)/.exec(new Date());     // The prettyprinted time.
-//   var hour = time[1] % 12 || 12;               // The prettyprinted hour.
-//   var period = time[1] < 12 ? 'a.m.' : 'p.m.'; // The period of the day.
-//   var timeText = hour + time[2] + ' ' + period;
-//   var notTitle = timeText;          // Notification title
-//   var notIcon = '../img/icon.png';  // Notification icon
-//   var notBody = 'Yeni anime geldi'  // Notification text
-//   var notTimeout = 5000;            // 5sn sonra kapanacak
-//   var notification = new Notification(
-//     notTitle, {
-//       icon: notIcon,
-//       body: notBody
-//     });
+function transform(data) {
+  var animeList = data.results.anime;
+  for (var i = 0; i < animeList.length; i++){
+    var anime = animeList[i];
+    var animeName;  // Anime adı
+    var animeEp;    // Anime bölüm bilgisi
+    var animeDate;  // Ne zaman eklendiği
+    var animeNameEp = anime.name.text; // Bölüm bilgisi ile anime adı
+    var animeHref = anime.name.href;  // Anime linki
+    
+    // Bölüm bilgisinin alınması
+    var animeHrefParts = animeHref.split(/-([0-9]*-bolum)/);
+    // Bölüm bilgisi varsa al yoksa empty string olarak ata
+    if (animeHrefParts.length > 1) {
+      // Bölüm numarasının alınması
+      var epNumber = animeHrefParts[1].split('-')[0];
+      animeEp = epNumber + ". " + "Bölüm";
+    }
+    else {
+      animeEp = "";
+    }
+    // Anime adından bölüm bilgisinin çıkarılması
+    animeName = animeNameEp.split(/ ([0-9]*. B*)/)[0];
+    // Anime adı büyükse kısalt
+    if(animeName.length > 34){
+      animeName = animeName.substring(0,31) + "...";
+    }
+    animeDate = anime.date.split("yaklaşık ")[1];
+    
+    // Yeni özelliklerle anime nesnesinin set edilmesi
+    data.results.anime[i].name.text = animeName;
+    data.results.anime[i].episode   = animeEp;
+    data.results.anime[i].date      = animeDate;
+  }
+  return data;
+}
 
-//   setTimeout(function(){
-//     notification.close();
-//   }); 
-  
-// }
-
-// // Conditionally initialize the options.
-// if (!localStorage.isInitialized) {
-//   localStorage.isActivated = true;   // The display activation.
-//   localStorage.frequency = 1;        // The display frequency, in minutes.
-//   localStorage.isInitialized = true; // The option initialization.
-// }
-
-// // Test for notification support.
-// if (window.Notification) {
-//   // While activated, show notifications at the display frequency.
-//   if (JSON.parse(localStorage.isActivated)) { show(); }
-
-//   var interval = 0; // The display interval, in minutes.
-
-//   setInterval(function() {
-//     interval++;
-
-//     if (JSON.parse(localStorage.isActivated) &&
-//         localStorage.frequency <= interval) 
-//     {
-//       show();
-//       interval = 0;
-//     }
-//   }, bgTimeInterval); // 5dk
-// }
+// Tüm anime listesinin getirilmesi için
+function getAllList(){
+  storage.get('listObject', function (data) {
+    if($.isEmptyObject(data) || chrome.runtime.lastError) {
+      console.log("listObject verisi yok");
+      $.ajax({
+        url:"https://www.kimonolabs.com/api/8j5at8tc?apikey=bq34GvSZDidJFU4L4Kp7chJoJRvT0LSR",
+        crossDomain: true,
+        dataType: "jsonp",
+        success: function (response) {
+          allList = response.results.list;
+          console.log(allList);
+          storage.set({'listObject': allList});
+        },
+        error: function (xhr, status) {
+          
+        }
+      });
+    }
+    else {
+      console.log('listObject verisi cachede');
+    }
+  });
+}

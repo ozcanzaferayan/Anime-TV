@@ -2,17 +2,22 @@
 var allList;
 // chrome.storage.local nesnesidir
 var storage;
+// Yeni eklenen animeler
+var newAnimes;
+
+var isAllListPrepared = false;
 
 document.addEventListener('DOMContentLoaded', main);
 function main() {
-  addSpinner();
+  //addSpinner();
+  storage = chrome.storage.local;
   getItems();
-  //storage = chrome.storage.local;
-  //getAllList();
 }
 
 // txtSearch'e tıklandığında dropdown menü gözükmesi için
 $('#txtSearch').on('focus', function(e){
+    if(!isAllListPrepared)
+      getAllList();
     // Alt kenarlıkların düzeltilmesi için
     $('#txtSearch').css('border-radius', '3px 3px 0px 0px');
     $('#searchList').show();
@@ -69,15 +74,10 @@ function removeSpinner(){
   $('.mod').remove();
 }
 
+
 function getItems(){
-  $.ajax({
-  url:"https://www.kimonolabs.com/api/cq7nr4ag?apikey=bq34GvSZDidJFU4L4Kp7chJoJRvT0LSR",
-  crossDomain: true,
-  dataType: "jsonp",
-  success: function (response) {
-    removeSpinner();
-    response = transform(response);
-    $(response.results.anime).each(function(i,v){
+  storage.get(newAnimes, function (data) {
+    $(data.newAnimesObject.results.anime).each(function(i,v){
       console.debug();
       var animeName     = v.name.text;
       var animeEp       = v.episode;
@@ -104,79 +104,15 @@ function getItems(){
         
       );
     });
-  },
-  error: function (xhr, status) {
-    //handle errors
-  }
-});
-}
-
-function transform(data) {
-  var animeList = data.results.anime;
-  for (var i = 0; i < animeList.length; i++){
-    var anime = animeList[i];
-    var animeName;  // Anime adı
-    var animeEp;    // Anime bölüm bilgisi
-    var animeDate;  // Ne zaman eklendiği
-    var animeNameEp = anime.name.text; // Bölüm bilgisi ile anime adı
-    var animeHref = anime.name.href;  // Anime linki
-    
-    // Bölüm bilgisinin alınması
-    var animeHrefParts = animeHref.split(/-([0-9]*-bolum)/);
-    // Bölüm bilgisi varsa al yoksa empty string olarak ata
-    if (animeHrefParts.length > 1) {
-      // Bölüm numarasının alınması
-      var epNumber = animeHrefParts[1].split('-')[0];
-      animeEp = epNumber + ". " + "Bölüm";
-    }
-    else {
-      animeEp = "";
-    }
-    // Anime adından bölüm bilgisinin çıkarılması
-    animeName = animeNameEp.split(/ ([0-9]*. B*)/)[0];
-    // Anime adı büyükse kısalt
-    if(animeName.length > 34){
-      animeName = animeName.substring(0,31) + "...";
-    }
-    animeDate = anime.date.split("yaklaşık ")[1];
-    
-    // Yeni özelliklerle anime nesnesinin set edilmesi
-    data.results.anime[i].name.text = animeName;
-    data.results.anime[i].episode   = animeEp;
-    data.results.anime[i].date      = animeDate;
-  }
-  return data;
+  });
 }
 
   
 function getAllList(){
-  storage.get('listObject', function (data) {
-    if($.isEmptyObject(data) || chrome.runtime.lastError) {
-      console.log("allList verisi yok");
-      $.ajax({
-        url:"https://www.kimonolabs.com/api/8j5at8tc?apikey=bq34GvSZDidJFU4L4Kp7chJoJRvT0LSR",
-        crossDomain: true,
-        dataType: "jsonp",
-        success: function (response) {
-          allList = response.results.list;
-          console.log(allList);
-          storage.set({'listObject': allList});
-           prepareSearchList(allList);
-        },
-        error: function (xhr, status) {
-          
-        }
-      });
-    }
-    else {
-      console.log('listObject verisi cachede');
-      allList = data.listObject;
-      prepareSearchList(allList);
-    }
-   
+  storage.get(allList, function (data) {
+    allList = data.listObject;
+    prepareSearchList(allList);
   });
-  
-  
 }
 
 function prepareSearchList(allList){  
@@ -189,4 +125,5 @@ function prepareSearchList(allList){
       '</li>'
     );
   });
+  isAllListPrepared = true;
 }
