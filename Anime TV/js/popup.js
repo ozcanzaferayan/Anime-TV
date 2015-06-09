@@ -8,8 +8,16 @@ var newAnimes;
 document.addEventListener('DOMContentLoaded', main);
 function main() {
   //addSpinner();
+  removeBadge();
   getItems();
   getAllList();
+
+}
+
+// Okunmayan anime sayısının silinmesi için
+function removeBadge() {
+  chrome.browserAction.setBadgeText({text: ""});
+  localStorage.unreadCount = 0;
 }
 
 // txtSearch'e tıklandığında dropdown menü gözükmesi için

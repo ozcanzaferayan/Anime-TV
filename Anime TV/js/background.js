@@ -2,11 +2,14 @@ var intervalNewAnimeList =    60000; // 1dk'da bir servis çalışacak
 var intervalAllAnimeList =  3600000; // 1saatte bir servis çalışacak
 var notTimeout = 10000; // 10sn boyunca notification açık kalacak 
 var apiFrequencyMilis = 15 * 60 * 1000; // 15dk API crawl aralığı
-var newAnimes;
-var allList;
+
+
 
 //Başlangıçta içeriklerin getirilmesi için
 $(document).ready(function(){
+  if(localStorage.unreadCount  === undefined){
+    localStorage.unreadCount = 0;
+  }
   storeNewAnimes();
   getAllList();
 });
@@ -74,14 +77,13 @@ function getNewAnimes(localAnimes){
     crossDomain: true,
     dataType: "jsonp",
     success: function (response) {
-      newAnimes = response;
-      newAnimes = transform(newAnimes);
-      localStorage.newAnimesObject = JSON.stringify(newAnimes);
+      response = transform(response);
+      localStorage.newAnimesObject = JSON.stringify(response);
       console.log("newAnimesObject verisi storage'a yazıldı");
       // local'de anime listesi var mı
       if (localAnimes !== undefined){
         // localdeki animelerle yeni gelenleri kıyasla
-        checkForNewAnimes(localAnimes, newAnimes);
+        checkForNewAnimes(localAnimes, response);
       }
     },
     error: function (xhr, status) {
@@ -109,12 +111,20 @@ function checkForNewAnimes(localAnimes, newAnimes){
     });
     // Yeni anime eski anime listesinde yoksa 
     if(!isFind){
+      localStorage.unreadCount = parseInt(localStorage.unreadCount) + 1;
       console.info("Yeni anime var:");
       console.log(v);
       addedAnimes.push(v);
     }
   });
-  notificateAnimes(addedAnimes);
+  if (a.length != 0) {
+    chrome.browserAction.setBadgeBackgroundColor({color:[0, 0, 0, 255]});
+    chrome.browserAction.setBadgeText({text: localStorage.unreadCount});
+    notificateAnimes(addedAnimes);
+  }
+  else{
+    console.log("Yeni bir anime yok.");
+  }
 }
 
 // Yeni eklenen animeleri bildirim olarak göstermek için
