@@ -2,6 +2,7 @@ var intervalNewAnimeList =    60000; // 1dk'da bir servis çalışacak
 var intervalAllAnimeList =  3600000; // 1saatte bir servis çalışacak
 var notTimeout = 10000; // 10sn boyunca notification açık kalacak 
 var apiFrequencyMilis = 15 * 60 * 1000; // 15dk API crawl aralığı
+var soundPath = "../mp3/waterdrop.mp3"; // Bildirim sesi
 
 
 
@@ -117,7 +118,7 @@ function checkForNewAnimes(localAnimes, newAnimes){
       addedAnimes.push(v);
     }
   });
-  if (a.length != 0) {
+  if (addedAnimes.length != 0) {
     chrome.browserAction.setBadgeBackgroundColor({color:[0, 0, 0, 255]});
     chrome.browserAction.setBadgeText({text: localStorage.unreadCount});
     notificateAnimes(addedAnimes);
@@ -142,6 +143,7 @@ function notificateAnimes(addedAnimes){
         icon: notIcon,
         body: notBody
       });
+    playAudio();
     // Notification'a tıklanınca anime'nin linkine gidilmesi için
     notification.addEventListener('click', function() {
       notification.close();
@@ -231,4 +233,9 @@ function prepareSearchList(listObject){
     );
   });
   return prepareSearchList;
+}
+
+// Bildirim sesi için
+function playAudio() {
+  new Audio(soundPath).play();
 }

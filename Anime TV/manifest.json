@@ -11,11 +11,6 @@
   "icons":{
     "128":"img/icon.png"
   },
-  "content_scripts": [{
-    "matches": ["http://*/*"],
-    "js": ["js/popup.js"],
-    "run_at": "document_start"
-  }],
   "options_page": "options.html",
   "background": { 
     "scripts": 
