@@ -17,6 +17,7 @@
     <!-- Custom styles for this template -->
     <link href="css/navbar-static-top.css" rel="stylesheet">
 
+    <link href="css/optionsMain.css" rel="stylesheet">
     <link href="css/options.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
@@ -49,11 +50,10 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Anasayfa</a></li>
-            <li class=""><a href="#">Takip Edilenler</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#about">Hakkında</a></li>
-            <li><a href="#contact">İletişim</a></li>
+            <li><a href="about.html">Hakkında</a></li>
+            <!-- <li><a href="contact.html">İletişim</a></li> -->
           </ul>
         </div>
       </div>
@@ -61,32 +61,68 @@
 
 
     <div class="container">
+        <h1 class="page-header">Ayarlar</h1>
+        <div class="form-horizontal">
 
-      <div class="jumbotron">
-        <h1>Anime TV</h1>
-        <p> AnimeTV'yi kullandığınız için teşekkür ederiz </p>
-        <p>Artık en son çıkan animeleri kolayca takip edebilir, yeni bölüm geldiğinde ilk haberdar olan siz olabilirsiniz.</p>
-        <p>
-          <a class="btn btn-lg btn-primary" href="https://github.com/ozcanzaferayan/anime-tv" role="button">
-            Github proje sayfası &raquo;
-          </a>
-        </p>
+          <div class="form-group">
+            <label class="col-md-4 control-label">Yeni anime listesinin çekilme süresi:</label>
+            <div class="col-md-8">
+              <select class="form-control" id="selectTimeForNewAnime">
+                <option value="1" selected>1 dakika</option>
+                <option value="5">5 dakika</option>
+                <option value="15">15 dakika</option>
+                <option value="30">30 dakika</option>
+                <option value="60">1 saat</option>
+                <option value="120">2 saat</option>
+                <option value="300">5 saat</option>
+              </select>
+            </div>
+          </div>
 
-        <input id="txtSearch" class="form-control input-lg" type="text" id="inputLarge" placeholder="Anime Ara">
+          <div class="form-group">
+            <label class="col-md-4 control-label">Tüm anime listesinin çekilme süresi:</label>
+            <div class="col-md-8">
+              <select class="form-control" id="selectTimeForAllAnime">
+                <option value="1">1 dakika</option>
+                <option value="5">5 dakika</option>
+                <option value="15" selected>15 dakika</option>
+                <option value="30">30 dakika</option>
+                <option value="60">1 saat</option>
+                <option value="120">2 saat</option>
+                <option value="300">5 saat</option>
+                <option value="600">10 saat</option>
+                <option value="1440">1gün</option>
+              </select>
+            </div>
+          </div>
 
-        <table id="tblAllList" class="table table-striped table-hover ">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Anime Adı</th>
-              <th>Takip Durumu</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table> 
+          <div class="form-group">
+            <label class="col-md-4 control-label">Masaüstü bildirimleri:</label>
+            <div class="col-md-8">
+              <div class="checkbox">
+                <label>
+                  <input id="chckNotifications" type="checkbox" checked> Açık
+                </label>
+              </div>
+            </div>
+          </div>  
 
-      </div>
+          <div class="form-group">
+            <label class="col-md-4 control-label">Bildirim geldiğinde ses çalınması:</label>
+            <div class="col-md-8">
+              <div class="checkbox">
+                <label>
+                  <input id="chckSound" type="checkbox" checked> Açık
+                </label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+  <!--         <div class="wrapper">
+            <input type="checkbox" name="toggle" id="toggle">
+            <label for="toggle"></label>
+          </div> -->
 
     </div> <!-- /container -->
 

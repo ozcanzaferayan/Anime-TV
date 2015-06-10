@@ -1,27 +1,70 @@
-var intervalNewAnimeList =    60000; // 1dk'da bir servis çalışacak
-var intervalAllAnimeList =  3600000; // 1saatte bir servis çalışacak
+var intervalNewAnimeList; // Yeni animeleri getirme aralığı
+var intervalAllAnimeList; // Tüm animeleri getirme aralığı
 var notTimeout = 10000; // 10sn boyunca notification açık kalacak 
 var apiFrequencyMilis = 15 * 60 * 1000; // 15dk API crawl aralığı
+var intervalOptions = 60 * 1000; // Ayarları çekme aralığı
 var soundPath = "../mp3/waterdrop.mp3"; // Bildirim sesi
+var options;
 
 
 
 //Başlangıçta içeriklerin getirilmesi için
 $(document).ready(function(){
+  console.debug();
   if(localStorage.unreadCount  === undefined){
     localStorage.unreadCount = 0;
   }
+  getOptions();
+  setIntervals();
   storeNewAnimes();
   getAllList();
+  setServiceIntervals();
+  
 });
 
-setInterval(function(){
-  storeNewAnimes();
-}, intervalNewAnimeList);
+// Servis kontrol aralıklarını belirler
+function setServiceIntervals(){
+  setInterval(function(){
+    storeNewAnimes();
+  }, intervalNewAnimeList);
+  setInterval(function(){
+    getAllList();
+  }, intervalAllAnimeList);
+  setInterval(function(){
+    getOptions();
+  }, intervalAllAnimeList);
+}
 
-setInterval(function(){
-  getAllList();
-}, intervalAllAnimeList);
+function setIntervals(){
+  intervalNewAnimeList = options.timeForNewAnimes * 60 * 1000;
+  intervalAllAnimeList = options.timeForAllAnimes * 60 * 1000;
+}
+
+// Gets options from localStorage
+// If options isnt in localStorage, sets default values
+function getOptions(){
+  if (localStorage.options === undefined){
+    // Set default options
+    options = {
+      hasNotifications: true,
+      hasNotificationSound: true,
+      timeForNewAnimes: 1,   // 1 min
+      timeForAllAnimes: 15  // 15 min
+    };
+    saveOptions();
+  }
+  else {
+    options = JSON.parse(localStorage.options);
+  } 
+}
+
+function saveOptions(){
+  localStorage.options = JSON.stringify(options);
+  console.log('Ayarlar kaydedildi:');
+  console.log(options);
+}
+
+
 
 function storeNewAnimes(){
   var currentTimeText = /(..)(:..)(:..)/.exec(new Date())[0];
@@ -121,7 +164,9 @@ function checkForNewAnimes(localAnimes, newAnimes){
   if (addedAnimes.length != 0) {
     chrome.browserAction.setBadgeBackgroundColor({color:[0, 0, 0, 255]});
     chrome.browserAction.setBadgeText({text: localStorage.unreadCount});
-    notificateAnimes(addedAnimes);
+    if(options.hasNotifications){
+      notificateAnimes(addedAnimes);
+    }
   }
   else{
     console.log("Yeni bir anime yok.");
@@ -143,7 +188,12 @@ function notificateAnimes(addedAnimes){
         icon: notIcon,
         body: notBody
       });
-    playAudio();
+
+    // Eğer notification sound varsa ses çal
+    if(options.hasNotificationSound){
+      playAudio();
+    }
+    
     // Notification'a tıklanınca anime'nin linkine gidilmesi için
     notification.addEventListener('click', function() {
       notification.close();
@@ -219,20 +269,6 @@ function getAllList(){
       
     }
   });
-}
-
-// Searchlist DOM'unun oluşturulması
-function prepareSearchList(listObject){  
-  $(listObject).each(function (i,v){
-    $('#searchList').append(
-      '<li class="sLi">' +
-      ' <a class="sA" href="' + v.name.href + '" target="_blank">' +
-        v.name.text +
-      ' </a>' +
-      '</li>'
-    );
-  });
-  return prepareSearchList;
 }
 
 // Bildirim sesi için

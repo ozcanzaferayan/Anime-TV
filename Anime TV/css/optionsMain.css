@@ -1,0 +1,9 @@
+.navbar-brand > img {
+  display: inline;
+  height: 50px;
+  margin-top: -15px;
+}
+
+.navbar-brand > span {
+  margin-left: 5px;
+}

@@ -6,8 +6,8 @@ var storage;
 var newAnimes;
 
 document.addEventListener('DOMContentLoaded', main);
+
 function main() {
-  //addSpinner();
   removeBadge();
   getItems();
   getAllList();
@@ -16,7 +16,9 @@ function main() {
 
 // Okunmayan anime sayısının silinmesi için
 function removeBadge() {
-  chrome.browserAction.setBadgeText({text: ""});
+  if(chrome.browserAction !== undefined){
+    chrome.browserAction.setBadgeText({text: ""});
+  }
   localStorage.unreadCount = 0;
 }
 
@@ -64,23 +66,10 @@ $('input#txtSearch').on('keyup', function(e){
     $matchingListElements.show();
 });
 
-// **Henüz aktif değil** 
-// Loading spinner eklemek için
-function addSpinner(){
-  $('.section').prepend(
-    '<div class="mod model-9">' +
-    '<div class="spinner"></div>' +
-    '</div>'
-  );
-}
-
-function removeSpinner(){
-  $('.mod').remove();
-}
-
 
 function getItems(){
   var newAnimes = JSON.parse(localStorage.newAnimesObject);
+  var animesDOM = "";
   $(newAnimes.results.anime).each(function(i,v){
     console.debug();
     var animeName     = v.name.text;
@@ -90,7 +79,7 @@ function getItems(){
     var animeLikes    = v.likes.text;
     var animeDislikes = v.dislikes.text;
     var animeImage    = v.image.src;
-    $('ul#newList').append(
+    animesDOM += 
       '<li class="newListAnim">' +
       ' <a href="' + animeHref + '" target="_blank">'+
       '   <img src="' + animeImage + '">' +
@@ -104,13 +93,12 @@ function getItems(){
       '     <div class="date">' + animeDate + '</div>' +
       '   </div>' +
       ' </a>' +
-      '</li>'
-      
-    );
+      '</li>';
   });
+  $('ul#newList').html(animesDOM);
 }
 
   
 function getAllList(){
-  $('#searchList').append(localStorage.listObject);
+  $('#searchList').html(localStorage.listObject);
 }
