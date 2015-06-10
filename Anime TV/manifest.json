@@ -1,7 +1,7 @@
 {
   "name": "Anime TV",
   "manifest_version": 2,
-  "version": "0.8",
+  "version": "0.8.1",
   "description": "Artık en son çıkan animeleri kolayca takip edebilir, yeni bölüm geldiğinde ilk haberdar olan siz olabilirsiniz.",
   "browser_action": {
       "default_title": "Anime TV",
