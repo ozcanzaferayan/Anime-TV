@@ -6,4 +6,6 @@ With this little Chrome Extension, you can watch any anime you want and follow y
 
 Screenshots:
 
-![alt tag](https://raw.githubusercontent.com/ozcanzaferayan/Anime-TV/master/Screenshots/2015-06-07_13-52-43.png)
+![alt tag](https://raw.githubusercontent.com/ozcanzaferayan/Anime-TV/master/Screenshots/Screenshot%201.png)
+![alt tag](https://raw.githubusercontent.com/ozcanzaferayan/Anime-TV/master/Screenshots/Screenshot%202.png)
+![alt tag](https://raw.githubusercontent.com/ozcanzaferayan/Anime-TV/master/Screenshots/Screenshot%203.png)
