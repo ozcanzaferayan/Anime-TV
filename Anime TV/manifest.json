@@ -1,8 +1,8 @@
 {
   "name": "Anime TV",
   "manifest_version": 2,
-  "version": "0.9.0",
-  "description": "Artık en son çıkan animeleri kolayca takip edebilir, yeni bölüm geldiğinde ilk haberdar olan siz olabilirsiniz. Masaüstü sesli bildirimleri ile favori animenizi takip etmek artık çok kolay. Eklenti simgesine tıklayarak açılan listede son eklenen animeleri görebilir, arama çubuğunda dilediğiniz anime için arama yaparak istediğiniz bölüme ulaşabilirsiniz. Sadece ekletntiyi kurun ve gerisini Anime TV'ye bırakın.",
+  "version": "0.9.3",
+  "description": "Anime'lerinizi takip etmenin en kolay yolu.",
   "browser_action": {
       "default_title": "Anime TV",
       "default_icon": "img/icon.png",
@@ -16,10 +16,12 @@
     "scripts": 
     [
       "js/jquery-2.1.0.min.js",
+      "js/main.js",
       "js/background.js"
     ] },
   "permissions": [
-    "https://www.kimonolabs.com/*"
+    "https://www.kimonolabs.com/*",
+    "notifications" 
   ],
   "content_security_policy": "script-src 'self' https://www.kimonolabs.com; object-src 'self'"
 }

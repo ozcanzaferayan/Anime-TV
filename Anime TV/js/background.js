@@ -153,7 +153,7 @@ function checkForNewAnimes(localAnimes, newAnimes){
         return false;
       }
     });
-    // Yeni anime eski anime listesinde yoksa 
+    // If new anime not exists old list, add badge
     if(!isFind){
       localStorage.unreadCount = parseInt(localStorage.unreadCount) + 1;
       console.info("Yeni anime var:");
@@ -176,6 +176,10 @@ function checkForNewAnimes(localAnimes, newAnimes){
 // Yeni eklenen animeleri bildirim olarak göstermek için
 function notificateAnimes(addedAnimes){
   $(addedAnimes).each(function(i,v){  
+    // Eğer 3 taneden fazla anime eklenmişse sadece gelen ilk 3 tanesi için notification atmak için
+    if (i == 3) {
+      return false;
+    }
     var animeName = v.name.text;        // Anime adı
     var animeLink = v.name.href;        // Anime linki
     var animeIcon = v.image.src;        // Anime icon linki
@@ -257,8 +261,8 @@ function getAllList(){
       $(response.results.list).each(function (i,v){
         animeULDom += 
           '<li class="sLi">' +
-          ' <a class="sA" href="' + v.name.href + '" target="_blank">' +
-            v.name.text +
+          ' <a class="sA" href="' + stripHTML(v.name.href) + '" target="_blank">' +
+            stripHTML(v.name.text) +
           ' </a>' +
           '</li>'
       });

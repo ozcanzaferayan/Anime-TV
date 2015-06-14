@@ -72,13 +72,13 @@ function getItems(){
   var animesDOM = "";
   $(newAnimes.results.anime).each(function(i,v){
     console.debug();
-    var animeName     = v.name.text;
-    var animeEp       = v.episode;
-    var animeDate     = v.date;  
-    var animeHref     = v.name.href;
-    var animeLikes    = v.likes.text;
-    var animeDislikes = v.dislikes.text;
-    var animeImage    = v.image.src;
+    var animeName     = stripHTML(v.name.text);
+    var animeEp       = stripHTML(v.episode);
+    var animeDate     = stripHTML(v.date);  
+    var animeHref     = stripHTML(v.name.href);
+    var animeLikes    = stripHTML(v.likes.text);
+    var animeDislikes = stripHTML(v.dislikes.text);
+    var animeImage    = stripHTML(v.image.src);
     animesDOM += 
       '<li class="newListAnim">' +
       ' <a href="' + animeHref + '" target="_blank">'+
