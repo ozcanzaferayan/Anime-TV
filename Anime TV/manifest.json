@@ -1,7 +1,7 @@
 {
   "name": "Anime TV",
   "manifest_version": 2,
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Anime'lerinizi takip etmenin en kolay yolu.",
   "browser_action": {
       "default_title": "Anime TV",

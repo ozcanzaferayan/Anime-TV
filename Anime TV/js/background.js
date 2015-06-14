@@ -175,39 +175,40 @@ function checkForNewAnimes(localAnimes, newAnimes){
 
 // Yeni eklenen animeleri bildirim olarak göstermek için
 function notificateAnimes(addedAnimes){
-  $(addedAnimes).each(function(i,v){  
-    // Eğer 3 taneden fazla anime eklenmişse sadece gelen ilk 3 tanesi için notification atmak için
-    if (i == 3) {
-      return false;
-    }
-    var animeName = v.name.text;        // Anime adı
-    var animeLink = v.name.href;        // Anime linki
-    var animeIcon = v.image.src;        // Anime icon linki
-    var notTitle = animeName;            // Notification adı
-    var notIcon = animeIcon;            // Notification icon
-    var notBody = 'İzlemek için tıklayınız.';  // Notification text
-    console.info('Bildirim atılıyor...')
-    var notification = new Notification(
-      notTitle, {
-        icon: notIcon,
-        body: notBody
-      });
+    for(var i = addedAnimes.length - 1; i >= 0; i--){
+      // Son 3 animeden daha fazla notification atmamak için
+      if (i > 2) {
+        continue;
+      }
+      var v = addedAnimes[i];
+      var animeName = v.name.text;        // Anime adı
+      var animeLink = v.name.href;        // Anime linki
+      var animeIcon = v.image.src;        // Anime icon linki
+      var notTitle = animeName;            // Notification adı
+      var notIcon = animeIcon;            // Notification icon
+      var notBody = 'İzlemek için tıklayınız.';  // Notification text
+      console.info('Bildirim atılıyor...')
+      var notification = new Notification(
+        notTitle, {
+          icon: notIcon,
+          body: notBody
+        });
 
-    // Eğer notification sound varsa ses çal
-    if(options.hasNotificationSound){
-      playAudio();
+      // Eğer notification sound varsa ses çal
+      if(options.hasNotificationSound){
+        playAudio();
+      }
+      
+      // Notification'a tıklanınca anime'nin linkine gidilmesi için
+      notification.addEventListener('click', function() {
+        notification.close();
+        window.open(animeLink);
+      });
+      // Bir süre sonra notification'ı kapat
+      setTimeout(function(){
+        notification.close();
+      }, notTimeout); 
     }
-    
-    // Notification'a tıklanınca anime'nin linkine gidilmesi için
-    notification.addEventListener('click', function() {
-      notification.close();
-      window.open(animeLink);
-    });
-    // Bir süre sonra notification'ı kapat
-    setTimeout(function(){
-      notification.close();
-    }, notTimeout); 
-  });
 }
 
 // Gelen API yeni anime listesindeki uygun hale dönüştürmek için
