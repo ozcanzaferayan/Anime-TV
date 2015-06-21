@@ -1,7 +1,8 @@
 {
   "name": "Anime TV",
   "manifest_version": 2,
-  "version": "0.9.4",
+  "version": "0.9.5",
+  "update_url": "https://github.com/ozcanzaferayan/anime-tv/master/chrome/updates.xml",
   "description": "Anime'lerinizi takip etmenin en kolay yolu.",
   "browser_action": {
       "default_title": "Anime TV",
